@@ -210,6 +210,28 @@
             background: rgba(22,33,62,0.5);
         }
 
+
+        .wind-live-btn {
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            background: #16213e;
+            color: #69db7c;
+            border: 2px solid #69db7c;
+            border-radius: 6px;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: all 0.2s ease;
+        }
+        .wind-live-btn:active {
+            background: #69db7c;
+            color: #16213e;
+        }
+        .wind-live-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
         /* Main content area */
         .content {
             flex: 1;
@@ -483,8 +505,12 @@
                 <input type="number" id="windMph" class="wind-mph-input" min="0" max="40" value="" placeholder="mph" inputmode="numeric">
                 <button class="wind-go-btn" id="windGoBtn">Go</button>
             </div>
+            <div style="text-align:center; margin-bottom:12px;">
+                <button class="wind-live-btn" id="windLiveBtn">Get Live Wind</button>
+            </div>
+            <div id="windInfo" style="text-align:center; color:#aaa; font-size:14px; margin-bottom:10px;"></div>
             <div class="wind-results" id="windResults">
-                <p style="text-align:center; color:#888; font-size:16px; margin-top:30px;">Enter wind speed and tap Go</p>
+                <p style="text-align:center; color:#888; font-size:16px; margin-top:30px;">Enter wind speed or tap Get Live Wind</p>
             </div>
         </section>
 
@@ -991,6 +1017,47 @@
                 calculateWindAdjustments(mph);
                 this.blur();
             }
+        });
+
+    
+        // Live wind data from Open-Meteo API for Wearside Golf Club
+        document.getElementById('windLiveBtn').addEventListener('click', function() {
+            var btn = this;
+            var infoDiv = document.getElementById('windInfo');
+            btn.disabled = true;
+            btn.textContent = 'Fetching...';
+            infoDiv.textContent = '';
+            
+            var url = 'https://api.open-meteo.com/v1/forecast?latitude=54.892&longitude=-1.478&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&timezone=Europe%2FLondon';
+            
+            fetch(url)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    var wind = Math.round(data.current.wind_speed_10m);
+                    var gusts = Math.round(data.current.wind_gusts_10m);
+                    var direction = data.current.wind_direction_10m;
+                    
+                    // Convert degrees to compass direction
+                    var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+                    var compassDir = dirs[Math.round(direction / 22.5) % 16];
+                    
+                    // Set the input value and auto-calculate
+                    document.getElementById('windMph').value = wind;
+                    calculateWindAdjustments(wind);
+                    
+                    // Show wind info
+                    var now = new Date();
+                    var timeStr = now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+                    infoDiv.innerHTML = '<span style="color:#69db7c">' + wind + ' mph ' + compassDir + '</span> &middot; Gusts ' + gusts + ' mph &middot; <span style="color:#666">' + timeStr + '</span>';
+                    
+                    btn.textContent = 'Get Live Wind';
+                    btn.disabled = false;
+                })
+                .catch(function(err) {
+                    infoDiv.innerHTML = '<span style="color:#ff6b6b">Could not fetch wind data. Check connection.</span>';
+                    btn.textContent = 'Get Live Wind';
+                    btn.disabled = false;
+                });
         });
 
     </script>
