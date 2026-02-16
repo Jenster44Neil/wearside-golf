@@ -182,24 +182,24 @@
             z-index: 2;
         }
         .wind-results-table td {
-            padding: 10px 6px;
+            padding: 5px 4px;
             text-align: center;
             border-bottom: 1px solid #2d6a4f;
             font-weight: 600;
         }
         .wind-results-table .yds-col {
             color: #d4af37;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             background: rgba(45,106,79,0.3);
         }
         .wind-results-table .headwind-col {
             color: #ff6b6b;
-            font-size: 22px;
+            font-size: 20px;
         }
         .wind-results-table .tailwind-col {
             color: #69db7c;
-            font-size: 22px;
+            font-size: 20px;
         }
         .wind-results-table .adj-small {
             font-size: 13px;
@@ -943,7 +943,8 @@
     
         // Today's Wind functionality
         function calculateWindAdjustments(mph) {
-            var yardages = [200, 190, 180, 170, 160, 150, 140, 130, 120, 110, 100, 90, 80, 70, 60, 50];
+            var yardages = [];
+            for (var y = 225; y >= 30; y--) { yardages.push(y); }
             var headwindPct = mph / 100;   // 1% per mph
             var tailwindPct = mph / 200;   // 0.5% per mph
             
